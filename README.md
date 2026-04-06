@@ -1,5 +1,7 @@
 # ob-paper-read
 
+[简体中文](./README.zh-CN.md) | English
+
 `ob-paper-read` is an Obsidian-oriented paper-reading skill pack.
 
 It is designed for a workflow where:
@@ -58,7 +60,7 @@ Default language:
 
 - Chinese first
 - preserve standard English technical terms where accuracy matters
-- use `English term (中文解释)` when helpful
+- use `English term (Chinese explanation)` when helpful
 
 ## Obsidian Chat
 
