@@ -2,86 +2,102 @@
 
 [简体中文](./README.zh-CN.md) | English
 
-`ob-paper-read` is an Obsidian-oriented paper-reading skill pack.
+`ob-paper-read` is an Obsidian-first paper reading workflow for Codex, Claude Code, and OpenClaw.
 
-It is designed for a workflow where:
+Instead of generating a shallow paper summary, it helps turn uploaded PDFs into a structured reading experience:
 
-- the user uploads one or more PDF papers in Codex / Claude Code / OpenClaw
-- the skill saves those PDFs into a local library
-- the skill generates a lecture-style `reading.md`
-- the user reads the PDF and `reading.md` side by side in Obsidian
-- chat turns, reading state, and reusable questions are written into local memory
+- save the paper into a local library
+- classify it into a lightweight reading context
+- generate a lecture-style `reading.md`
+- extract key figures into local assets
+- preserve reading state, question memory, and cross-session context
 
-## What This Repo Contains
+The intended workspace is simple:
 
-- `SKILL.md`: the main skill contract
-- `scripts/`: local helpers for memory bootstrap, paper cards, reading note generation, comparison briefs, and figure extraction
-- `references/`: setup, memory, output, compatibility, plugin, and adapter docs
-- `obsidian-plugin/`: a minimal Obsidian sidebar chat plugin
+- left: the source PDF
+- center: `reading.md`
+- right: an AI chat panel inside Obsidian
 
-## Current V1 Scope
+## Why This Exists
 
-- PDF uploads only
-- local library only
-- one primary paper at a time
-- one main output file per paper: `reading.md`
-- detailed lecture-style guidance instead of short summary
-- optional figure extraction into `assets/`
+Most paper tools are optimized for retrieval or summarization.
 
-Not in V1:
+`ob-paper-read` is optimized for reading:
 
-- URL ingestion as the default path
-- web search as a required dependency
-- a domain-specific knowledge map
+- staying close to the original paper
+- explaining section by section
+- turning figures into teaching moments
+- helping the reader build memory instead of collecting fragments
 
-## Core Product Shape
+## What It Produces
 
-- host chat is responsible for file upload
-- `ob-paper-read` is responsible for classification, memory, and output structure
-- Obsidian is the reading workspace
+For each paper, the core output is:
 
-## Output Style
+- `reading.md`: the main lecture-style reading note
+- `assets/`: extracted key figures or tables
+- local memory records for paper state, questions, and sessions
 
-The main deliverable is `reading.md`.
+The goal is for `reading.md` to feel closer to a guided handout than a summary shell.
 
-It should feel like:
+## Core Design
 
-- a lecture handout
-- a guided reading note
-- a teacher walking the user through title, abstract, conclusion, body, figures, evidence, and limits
+- PDF-first: V1 starts from uploaded PDF files
+- local-first: files and memory stay in the user’s workspace
+- single-paper focus: when multiple PDFs are uploaded, the user chooses one primary paper
+- detailed reading by default: the output should explain, not skim
+- Obsidian-native workflow: PDF, Markdown, and chat live in one workspace
 
-It should not feel like:
+## Repository Structure
 
-- "here is a short summary"
-- a flat bullet dump
-- an unstructured note shell
-
-Default language:
-
-- Chinese first
-- preserve standard English technical terms where accuracy matters
-- use `English term (Chinese explanation)` when helpful
+- `SKILL.md`: the main skill definition
+- `scripts/`: helper scripts for memory bootstrap, paper cards, reading bundle generation, figure extraction, and comparison context
+- `references/`: setup docs, output rules, memory schema, plugin notes, and platform adapters
+- `obsidian-plugin/`: a minimal sidebar chat plugin for Obsidian
 
 ## Obsidian Chat
 
-This repo includes `OB Paper Read Chat`, a minimal Obsidian plugin that gives the vault a right-sidebar chat panel.
+This repository includes `OB Paper Read Chat`, a small Obsidian plugin that adds a right sidebar chat panel.
 
-Modes:
+It supports two usage modes:
 
-- `Bridge`: copy an Obsidian context packet into Codex / Claude Code / OpenClaw
-- `API`: direct in-Obsidian chat against an OpenAI-compatible endpoint
+- `Bridge`: package the current Obsidian context and continue the conversation in Codex / Claude Code / OpenClaw
+- `API`: chat directly inside Obsidian through an OpenAI-compatible endpoint
 
 ## Quick Start
 
-1. Read `references/setup.md`.
+1. Read [`references/setup.md`](./references/setup.md).
 2. Run `scripts/bootstrap_memory.py`.
-3. Create or ingest one paper card.
+3. Create or ingest a paper card.
 4. Generate `reading.md` with `scripts/create_reading_bundle.py`.
-5. Optionally extract key figures with `scripts/extract_pdf_figures.py`.
-6. Open the PDF, `reading.md`, and the chat plugin in Obsidian.
+5. Optionally extract figures with `scripts/extract_pdf_figures.py`.
+6. Open the PDF, `reading.md`, and the chat sidebar in Obsidian.
 
-## Repository Notes
+## Current Scope
 
-- keep machine-specific paths out of committed examples when possible
-- keep API keys out of repo files and local memory
+V1 includes:
+
+- PDF uploads
+- local storage
+- a single primary paper flow
+- lecture-style Markdown output
+- optional figure extraction
+
+V1 does not aim to be:
+
+- a general search engine
+- a web crawler
+- a giant knowledge graph product
+
+## Language Style
+
+The default output style is:
+
+- Chinese-first
+- English technical terms preserved when they are the clearest form
+- optional bilingual phrasing such as `self-attention（自注意力）`
+
+## Notes
+
+- keep machine-specific paths out of committed examples
+- do not store API keys in repo files or local memory
 - keep raw PDFs immutable
