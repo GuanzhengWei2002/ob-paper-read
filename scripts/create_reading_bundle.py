@@ -95,7 +95,32 @@ def join_paragraphs(*parts: object) -> list[str]:
     return lines
 
 
-def figure_walkthrough(entry: dict) -> list[str]:
+def adjustment_lines(card: dict) -> list[str]:
+    adjustments = card.get("teaching_adjustments", {}) or {}
+    lines: list[str] = []
+    focus_more_on = as_list(adjustments.get("focus_more_on"))
+    focus_less_on = as_list(adjustments.get("focus_less_on"))
+    preferred_style = as_list(adjustments.get("preferred_explanation_style"))
+    figure_priority = as_list(adjustments.get("figure_priority"))
+    unresolved_concepts = as_list(adjustments.get("unresolved_concepts"))
+    notes = str(adjustments.get("notes", "")).strip()
+
+    if focus_more_on:
+        lines.append("- 这次会额外加重这些部分: " + " / ".join(focus_more_on))
+    if focus_less_on:
+        lines.append("- 这次会适度压缩这些背景: " + " / ".join(focus_less_on))
+    if preferred_style:
+        lines.append("- 这次优先采用这些讲法: " + " / ".join(preferred_style))
+    if figure_priority:
+        lines.append("- 这次会优先强化这些图表: " + " / ".join(figure_priority))
+    if unresolved_concepts:
+        lines.append("- 这些概念仍被视为未完全讲透: " + " / ".join(unresolved_concepts))
+    if notes:
+        lines.append(f"- 讲解备注: {notes}")
+    return lines
+
+
+def figure_walkthrough(entry: dict, extra_note: str = "") -> list[str]:
     label = entry.get("label") or entry.get("id") or "Key Figure"
     title = entry.get("title", "")
     caption = entry.get("caption", "")
@@ -110,6 +135,8 @@ def figure_walkthrough(entry: dict) -> list[str]:
         lines.append(f"- 这张图在画什么: {caption}")
     if teaching_point:
         lines.append(f"- 读图重点: {teaching_point}")
+    if extra_note:
+        lines.append(f"- 记忆加重项: {extra_note}")
     if image_path:
         lines.append("")
         lines.append(f"![{label}]({image_path})")
@@ -117,24 +144,33 @@ def figure_walkthrough(entry: dict) -> list[str]:
 
     lines.extend(
         [
-            "先不要急着把图里的每个方框都看成一个术语清单，更好的读法是先沿着数据流看：输入是怎么进来，表示是怎么被变换，最后输出是怎么生成的。",
-            "如果这是结构总览图，你最应该先抓住的是主干，而不是角落里的细节。先看大的模块分工，再看每个模块内部各自承担什么职责。",
-            "如果你发现自己开始被层数、箭头、缩写绕晕了，停一下，回到一个最简单的问题：这张图到底想证明作者的方法和旧方法相比，换掉了什么。",
+            "先沿着数据流看，不要一开始就试图记住每个方框的名字。",
+            "如果这是结构总览图，先抓主干，再抓模块，再抓模块之间的关系。",
+            "如果你开始被缩写或层数绕晕，就回到一个问题：这张图到底在说明作者换掉了旧方法里的什么。",
         ]
     )
     return lines
 
 
-def figure_section(entries: list[dict]) -> str:
+def figure_section(card: dict) -> str:
+    entries = card.get("key_figures", []) or []
+    adjustments = card.get("teaching_adjustments", {}) or {}
+    figure_priority = set(as_list(adjustments.get("figure_priority")))
+
     if not entries:
         return block("关键图表精讲（Key Figures）", ["- 当前还没有配置需要抽取的关键图页码。"])
 
     lines: list[str] = [
-        "这一节不是把图贴上来就结束，而是把图真正讲明白。读图时先抓主干，再抓模块，再抓作者想让你相信的设计选择。",
+        "这一节不是把图贴上来就结束，而是把图真正讲清楚。",
         "",
     ]
     for entry in entries:
-        lines.extend(figure_walkthrough(entry))
+        label = str(entry.get("label") or entry.get("id") or "").strip()
+        title = str(entry.get("title") or "").strip()
+        extra_note = ""
+        if label in figure_priority or title in figure_priority:
+            extra_note = "用户在历史提问里对这张图有较高关注，本次会讲得更细。"
+        lines.extend(figure_walkthrough(entry, extra_note))
         lines.append("")
     return block("关键图表精讲（Key Figures）", lines)
 
@@ -159,8 +195,8 @@ def table_section(entries: list[dict]) -> str:
             lines.append(f"- 你最该先盯住的列/行: {teaching_point}")
         lines.extend(
             [
-                "- 先看比较对象是谁，再看评价指标是什么，最后看作者有没有在关键指标上真正赢得有说服力。",
-                "- 如果表格很大，不要试图一次扫完所有数字。先找作者最想你看到的那一组对比。",
+                "- 先看比较对象，再看指标，最后看作者有没有在关键指标上真正赢得有说服力。",
+                "- 如果表格很大，不要试图一次扫完全部数字，先找作者最希望你注意的对比。",
                 "",
             ]
         )
@@ -172,7 +208,7 @@ def related_reads_section(entries: list[dict]) -> str:
         return block("arXiv 延伸阅读（Related arXiv Reads）", ["- 当前还没有补充外部延伸阅读。"])
 
     lines: list[str] = [
-        "本地库里如果还没有足够合适的延伸阅读，可以先从下面这些 arXiv 论文接上。",
+        "如果本地库里还没有足够合适的延伸阅读，可以先从下面这些 arXiv 论文接上。",
         "",
     ]
     for entry in entries:
@@ -195,35 +231,36 @@ def reading_markdown(card: dict) -> str:
     source = card.get("source", {})
     source_path = source.get("path", "") if isinstance(source, dict) else ""
     script = card.get("teaching_script", {})
+    adjustments = card.get("teaching_adjustments", {}) or {}
 
     abstract_walkthrough = as_list(script.get("abstract_walkthrough"))
     experiment_walkthrough = as_list(script.get("experiment_walkthrough"))
     takeaways = as_list(script.get("takeaways"))
+    unresolved_concepts = as_list(adjustments.get("unresolved_concepts"))
+    personal_focus = adjustment_lines(card)
+
     mastery_questions = as_list(script.get("mastery_questions")) or [
         "这篇论文到底要解决什么问题？",
         "作者换掉了什么旧做法，为什么敢这么换？",
-        "Figure 1 或关键实验到底证明了什么？",
+        "关键图或关键实验到底证明了什么？",
         "如果你给别人讲这篇论文，你会怎么用三到五句话讲清楚？",
     ]
 
-    method_overview = str(script.get("method_overview", "")).strip()
-    if not method_overview:
-        method_overview = (
-            "读方法部分时，不要一上来陷进公式。先抓整体骨架，再抓几个关键模块各自解决什么问题。"
-            "如果主干想清楚了，细节会容易挂上去。"
-        )
+    method_overview = str(script.get("method_overview", "")).strip() or (
+        "读方法部分时，不要一上来陷进公式。先抓整体骨架，再抓关键模块各自解决什么问题。"
+    )
+    method_walkthrough = str(script.get("method_walkthrough", "")).strip() or (
+        "方法部分应该像讲课一样拆开：整体架构、关键模块、每个模块解决什么问题、这些模块为什么要一起工作。"
+    )
+    evidence_walkthrough = str(script.get("evidence_walkthrough", "")).strip() or (
+        "实验部分最重要的不是把结果数字念一遍，而是判断这些证据能不能真正支撑作者的核心主张。"
+    )
+    retell_script = str(script.get("retell_script", "")).strip() or (
+        "可以试着用一个短复述来检验自己：旧路线哪里不够，作者换成了什么，新路线为什么更值得继续追。"
+    )
 
-    evidence_walkthrough = str(script.get("evidence_walkthrough", "")).strip()
-    if not evidence_walkthrough:
-        evidence_walkthrough = (
-            "实验部分最重要的不是把结果数字念一遍，而是判断这些证据能不能真正支撑作者的核心主张。"
-        )
-
-    retell_script = str(script.get("retell_script", "")).strip()
-    if not retell_script:
-        retell_script = (
-            "可以试着用一个短复述来检验自己：旧路线哪里不够，作者换成了什么，新路线为什么更值得继续追。"
-        )
+    if unresolved_concepts:
+        method_overview += "\n\n- 结合历史提问，这次会特别补清楚: " + " / ".join(unresolved_concepts)
 
     parts = [
         frontmatter(card),
@@ -235,8 +272,12 @@ def reading_markdown(card: dict) -> str:
                 f"- 为什么值得读（Why It Matters）: {card.get('why_it_matters', '')}",
                 f"- 原始 PDF（Source PDF）: {source_path}",
                 "",
-                script.get("opening_hook") or "这一节应该先告诉读者：这篇论文为什么值得认真读，而不是只看一个摘要就结束。",
+                script.get("opening_hook") or "这里先回答一个问题：这篇论文为什么值得认真读，而不是只看一眼摘要就结束。",
             ),
+        ),
+        block(
+            "本次讲解重点（Memory-Guided Focus）",
+            personal_focus or ["- 当前没有额外的个性化加重项，将按通用讲义范式展开。"],
         ),
         block(
             "读前准备（Before We Read）",
@@ -252,7 +293,7 @@ def reading_markdown(card: dict) -> str:
             ]
             + join_paragraphs(
                 script.get("prerequisite_bridge")
-                or "这一节只补真正需要的前置知识，补到能继续读下去为止，而不是把背景课开成另一门课。"
+                or "这里只补真正需要的前置知识，补到能继续读下去为止，而不是把背景课开成另一门课。"
             )
             + bullets(card.get("prerequisites", []), "当前还没有补充前置知识。"),
         ),
@@ -260,7 +301,7 @@ def reading_markdown(card: dict) -> str:
             "标题怎么读（How To Read The Title）",
             join_paragraphs(
                 script.get("title_walkthrough")
-                or "标题不是装饰，它通常已经暴露了作者的立场：要挑战什么旧路线，要强调什么新主干。"
+                or "标题通常已经暴露了作者的立场：要挑战什么旧路线，要强调什么新主干。"
             ),
         ),
         sub_block(
@@ -274,34 +315,32 @@ def reading_markdown(card: dict) -> str:
             "先看结论（Conclusion First）",
             join_paragraphs(
                 script.get("conclusion_walkthrough")
-                or "先看结论的目的不是偷懒，而是先抓住作者最终想让你记住的判断，再回头读正文会更有方向。"
+                or "先看结论的目的不是偷懒，而是先抓住作者最终想让你记住的判断。"
             ),
         ),
         block(
             "作者与时代背景（Authors And Context）",
             join_paragraphs(
                 script.get("author_context")
-                or "这里应该交代作者来自什么背景、论文处于什么技术阶段、为什么这篇工作在当时显得重要。"
+                or "这里应该交代作者背景、论文所处阶段，以及它为什么在当时显得重要。"
             ),
         ),
         block(
             "正文带读（Guided Reading）",
-            [
-                "下面这一部分不是泛泛复述，而是按照论文自己的推进顺序来讲：作者先立问题，再交代旧路线，再提出新结构，最后拿实验去证明。",
-            ],
+            ["下面这一部分按论文自己的推进顺序来讲：立问题、讲旧路线、提新结构、拿实验说服读者。"],
         ),
         sub_block(
             "引言：作者是怎么把问题立起来的（Introduction）",
             join_paragraphs(
                 script.get("introduction_walkthrough")
-                or "读引言时，要盯住作者如何界定旧路线的瓶颈，以及为什么这些瓶颈值得被重新设计。"
+                or "读引言时，重点看作者如何界定旧路线的瓶颈，以及为什么这些瓶颈值得被重新设计。"
             ),
         ),
         sub_block(
             "相关工作 / 基线：旧路线到底卡在哪里（Related Work / Baseline）",
             join_paragraphs(
                 script.get("related_work_walkthrough")
-                or "相关工作部分最重要的不是记名字，而是搞清楚作者到底在和哪几类方法对话。"
+                or "相关工作部分最重要的不是记名字，而是弄清楚作者到底在和哪几类方法对话。"
             ),
         ),
         sub_block(
@@ -310,12 +349,9 @@ def reading_markdown(card: dict) -> str:
         ),
         sub_block(
             "方法细讲（Method Walkthrough）",
-            join_paragraphs(
-                script.get("method_walkthrough")
-                or "方法部分应该像讲课一样拆开：整体架构、关键模块、每个模块解决什么问题、这些模块为什么要一起工作。"
-            ),
+            join_paragraphs(method_walkthrough),
         ),
-        figure_section(card.get("key_figures", [])),
+        figure_section(card),
         sub_block(
             "实验与证据：作者到底证明了什么（Experiments And Evidence）",
             join_paragraphs(evidence_walkthrough)
@@ -340,13 +376,11 @@ def reading_markdown(card: dict) -> str:
                 "当前还没有整理最终 takeaways。建议至少提炼出问题、方法、证据、位置这四件事。",
             ),
         ),
-        block(
-            "30 秒复述模板（Short Retell）",
-            join_paragraphs(retell_script),
-        ),
+        block("30 秒复述模板（Short Retell）", join_paragraphs(retell_script)),
         block(
             "你的问题（Open Questions）",
-            bullets(card.get("open_questions", []), "当前还没有记录新的疑问。"),
+            bullets(card.get("open_questions", []), "当前还没有记录新的疑问。")
+            + bullets(unresolved_concepts, "当前还没有标记未解决概念。"),
         ),
         block(
             "我的笔记（My Notes）",
@@ -365,10 +399,7 @@ def reading_markdown(card: dict) -> str:
                 or "试着不看原文，用自己的话把这篇论文讲给一个刚入门的人听。讲不顺的地方，通常就是还没真正吃透的地方。"
             ),
         ),
-        block(
-            "掌握度检查（Mastery Check）",
-            bullets(mastery_questions, "当前还没有补充掌握度问题。"),
-        ),
+        block("掌握度检查（Mastery Check）", bullets(mastery_questions, "当前还没有补充掌握度问题。")),
         block(
             "本地延伸阅读（Local Follow-Up Reads）",
             ["### 前置论文（Predecessor）"]

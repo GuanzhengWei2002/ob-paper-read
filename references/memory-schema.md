@@ -109,6 +109,15 @@ Store each paper as `papers/<paper_id>.json`.
     "reflection_prompt": "",
     "mastery_questions": []
   },
+  "teaching_adjustments": {
+    "focus_more_on": [],
+    "focus_less_on": [],
+    "preferred_explanation_style": [],
+    "figure_priority": [],
+    "unresolved_concepts": [],
+    "carry_into_next_generation": true,
+    "notes": ""
+  },
   "open_questions": [],
   "external_related_reads": [
     {
@@ -145,6 +154,20 @@ Store each paper as `papers/<paper_id>.json`.
 }
 ```
 
+`teaching_script` is still the main lecture-note scaffold.
+
+`teaching_adjustments` is a lighter user-memory layer that can bias later regeneration without replacing the core teaching pattern. Use it to record:
+
+- which ideas need more space next time
+- which background parts can be shortened
+- whether the user prefers intuition-first, figure-first, or comparison-first explanation
+- which unresolved concepts should be carried into the next `reading.md` generation
+
+In other words:
+
+- the general explanation pattern stays primary
+- user memory only adjusts emphasis
+
 ## Question Memory
 
 Store each reusable question as `questions/<question_id>.json`.
@@ -158,10 +181,29 @@ Store each reusable question as `questions/<question_id>.json`.
   "papers": ["attention-is-all-you-need"],
   "sessions": [],
   "ask_count": 2,
+  "status": "unresolved",
+  "resolution_confidence": 0.2,
+  "last_asked_at": "",
   "last_answer_note": "",
-  "follow_up_prompt": ""
+  "follow_up_prompt": "",
+  "resolved_in_papers": [],
+  "unresolved_in_papers": ["attention-is-all-you-need"]
 }
 ```
+
+Recommended `status` values:
+
+- `open`
+- `partially_resolved`
+- `resolved`
+- `reopened`
+
+Use question memory to decide whether later `reading.md` regeneration should:
+
+- reinforce the same concept
+- add a simpler explanation path
+- spend more space on a figure or comparison
+- ask a follow-up question instead of repeating the same wording
 
 ## Session Summary
 

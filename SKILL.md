@@ -50,6 +50,8 @@ Load [references/session-flow.md](references/session-flow.md) for the reading wo
 13. When a figure matters, extract it from the PDF and embed it into `reading.md`.
 14. Reference materials may shape the prompt internally, but the final output should not mention those reference authors or sources unless the user explicitly asks for them.
 15. Default to very detailed explanation, not terse summarization.
+16. User memory may adjust emphasis, but the main lecture-note structure should still follow the general teaching pattern.
+17. Use `teaching_adjustments` and resolved/unresolved question memory to strengthen weak spots, not to replace the paper’s main explanatory route.
 
 ## Workflow
 
@@ -86,6 +88,16 @@ Classify each paper with lightweight labels:
 Prefer broad stable labels over fragile micro-taxonomies.
 
 Create or update a paper card immediately.
+
+When question memory already exists, write those signals into lightweight `teaching_adjustments` fields such as:
+
+- `focus_more_on`
+- `focus_less_on`
+- `preferred_explanation_style`
+- `figure_priority`
+- `unresolved_concepts`
+
+These should bias later regeneration, but they should not replace the shared lecture-note scaffold.
 
 ### 3. Detailed Reading
 Start by quickly clarifying:
@@ -129,6 +141,12 @@ Focus on:
 - resolve key details
 - ask author-view reflection questions
 - help the user restate the paper in their own words
+
+If the user has repeated unresolved questions, update:
+
+- the paper card’s `teaching_adjustments`
+- the question record’s `status`
+- the next generation pass for `reading.md`
 
 ### 5. Mastery And Status
 

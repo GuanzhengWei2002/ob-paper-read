@@ -100,6 +100,14 @@ The file should actively reduce confusion by:
 - translating notation or module names into intuition
 - reminding the reader where they are in the argument
 
+If user memory exists, it should only adjust emphasis:
+
+- add more space to repeated weak spots
+- reinforce unresolved concepts
+- prioritize figures the user keeps asking about
+
+It should not replace the shared lecture-note scaffold.
+
 ## Figure Assets
 
 Each key figure or table should be rendered into `papers/<paper-id>/assets/` and embedded into `reading.md`.

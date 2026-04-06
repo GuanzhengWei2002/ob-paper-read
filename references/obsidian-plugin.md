@@ -121,3 +121,4 @@ The plugin can persist:
 - question memory under `questions/`
 - session turns under `sessions/`
 - lightweight paper metrics such as `qa_count` and `last_read_at`
+- `teaching_adjustments` inside the paper card, so repeated questions can bias the next `reading.md` generation without replacing the main lecture-note pattern

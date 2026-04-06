@@ -1,103 +1,101 @@
 # ob-paper-read
 
-[简体中文](./README.zh-CN.md) | English
+简体中文 | [English](./README.en.md)
 
-`ob-paper-read` is an Obsidian-first paper reading workflow for Codex, Claude Code, and OpenClaw.
+`ob-paper-read` 是一个面向 Codex、Claude Code、OpenClaw 与 Obsidian 的论文阅读工作流。
 
-Instead of generating a shallow paper summary, it helps turn uploaded PDFs into a structured reading experience:
+它不是用来“快速总结一篇论文”的，而是把 PDF 论文组织成一个更适合认真阅读、持续追问和长期沉淀的过程。
 
-- save the paper into a local library
-- classify it into a lightweight reading context
-- generate a lecture-style `reading.md`
-- extract key figures into local assets
-- preserve reading state, question memory, and cross-session context
+## 它解决什么问题
 
-The intended workspace is simple:
+很多工具擅长搜论文、收论文、摘要论文。  
+`ob-paper-read` 更关注另一件事：**怎么把一篇论文真正读进去。**
 
-- left: the source PDF
-- center: `reading.md`
-- right: an AI chat panel inside Obsidian
+它希望提供的是这样一种体验：
 
-## Why This Exists
+- 左边看原始 PDF
+- 中间看讲义风格的 `reading.md`
+- 右边在 Obsidian 里直接和 AI 对话
 
-Most paper tools are optimized for retrieval or summarization.
+## 核心能力
 
-`ob-paper-read` is optimized for reading:
+- 以 PDF 为起点，把论文保存到本地论文库
+- 给论文建立轻量分类和阅读上下文
+- 生成详细讲义风格的 `reading.md`
+- 抽取关键图表到本地 `assets/`
+- 记录阅读状态、问题历史和跨 session 记忆
+- 让用户提问反向影响后续讲义重点，但不破坏通用讲解范式
 
-- staying close to the original paper
-- explaining section by section
-- turning figures into teaching moments
-- helping the reader build memory instead of collecting fragments
+## 输出结果
 
-## What It Produces
+对每篇论文，核心产物是：
 
-For each paper, the core output is:
+- `reading.md`
+- `assets/`
+- 本地 memory：记录论文状态、问题、session、教学调整项等信息
 
-- `reading.md`: the main lecture-style reading note
-- `assets/`: extracted key figures or tables
-- local memory records for paper state, questions, and sessions
+这里的目标不是“多生成几个文件”，而是让 `reading.md` 本身就像一份可以阅读、可以追问、可以反思的带读讲义。
 
-The goal is for `reading.md` to feel closer to a guided handout than a summary shell.
+## 产品思路
 
-## Core Design
+- `PDF-first`：V1 从 PDF 上传开始
+- `local-first`：文件和 memory 默认都在本地
+- `single-paper focus`：多篇上传时先选一篇主读
+- `detailed reading by default`：默认详细讲解，不做浅层摘要
+- `Obsidian-native`：PDF、Markdown、聊天尽量放在同一个工作台里
 
-- PDF-first: V1 starts from uploaded PDF files
-- local-first: files and memory stay in the user’s workspace
-- single-paper focus: when multiple PDFs are uploaded, the user chooses one primary paper
-- detailed reading by default: the output should explain, not skim
-- Obsidian-native workflow: PDF, Markdown, and chat live in one workspace
+## 仓库结构
 
-## Repository Structure
+- `SKILL.md`：主 skill 定义
+- `scripts/`：memory 初始化、paper card、讲义生成、图表抽取、对比上下文等脚本
+- `references/`：setup、输出规则、memory schema、插件说明、平台适配文档
+- `obsidian-plugin/`：Obsidian 右侧聊天插件
 
-- `SKILL.md`: the main skill definition
-- `scripts/`: helper scripts for memory bootstrap, paper cards, reading bundle generation, figure extraction, and comparison context
-- `references/`: setup docs, output rules, memory schema, plugin notes, and platform adapters
-- `obsidian-plugin/`: a minimal sidebar chat plugin for Obsidian
+## Obsidian 聊天
 
-## Obsidian Chat
+仓库里自带了一个 `OB Paper Read Chat` 插件，用来给 Obsidian 增加右侧聊天栏。
 
-This repository includes `OB Paper Read Chat`, a small Obsidian plugin that adds a right sidebar chat panel.
+它支持两种模式：
 
-It supports two usage modes:
+- `Bridge`：把当前 Obsidian 上下文打包后，交给 Codex / Claude Code / OpenClaw 继续回答
+- `API`：直接在 Obsidian 里通过 OpenAI-compatible 接口聊天
 
-- `Bridge`: package the current Obsidian context and continue the conversation in Codex / Claude Code / OpenClaw
-- `API`: chat directly inside Obsidian through an OpenAI-compatible endpoint
+## 快速开始
 
-## Quick Start
+1. 阅读 [`references/setup.md`](./references/setup.md)
+2. 运行 `scripts/bootstrap_memory.py`
+3. 创建或导入一篇论文的 paper card
+4. 用 `scripts/create_reading_bundle.py` 生成 `reading.md`
+5. 如有需要，用 `scripts/extract_pdf_figures.py` 抽取关键图表
+6. 在 Obsidian 里打开 PDF、`reading.md` 和聊天栏
 
-1. Read [`references/setup.md`](./references/setup.md).
-2. Run `scripts/bootstrap_memory.py`.
-3. Create or ingest a paper card.
-4. Generate `reading.md` with `scripts/create_reading_bundle.py`.
-5. Optionally extract figures with `scripts/extract_pdf_figures.py`.
-6. Open the PDF, `reading.md`, and the chat sidebar in Obsidian.
+## 当前范围
 
-## Current Scope
+V1 已覆盖：
 
-V1 includes:
+- PDF 上传
+- 本地存储
+- 单篇主读流程
+- 讲义风格 Markdown 输出
+- 可选的图表抽取
+- 用户提问驱动的 `teaching_adjustments`
 
-- PDF uploads
-- local storage
-- a single primary paper flow
-- lecture-style Markdown output
-- optional figure extraction
+V1 暂时不追求：
 
-V1 does not aim to be:
+- 做一个通用搜索引擎
+- 做网页抓取器
+- 做一个巨大的知识图谱产品
 
-- a general search engine
-- a web crawler
-- a giant knowledge graph product
+## 语言风格
 
-## Language Style
+默认输出风格是：
 
-The default output style is:
+- 中文为主
+- 在更准确的时候保留英文术语
+- 需要时使用 `self-attention（自注意力）` 这类中英结合表达
 
-- Chinese-first
-- English technical terms preserved when they are the clearest form
-- optional bilingual phrasing such as `self-attention（自注意力）`
+## 说明
 
-## Notes
-
-- keep machine-specific paths out of committed examples
-- do not store API keys in repo files or local memory
-- keep raw PDFs immutable
+- 尽量不要把机器相关路径提交进仓库
+- 不要把 API key 写进仓库或本地 memory
+- 原始 PDF 保持只读，不直接修改

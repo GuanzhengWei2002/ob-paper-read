@@ -39,6 +39,80 @@ function clip(text, maxLength = 280) {
   return value.slice(0, maxLength) + "...";
 }
 
+function uniquePush(list, value) {
+  if (!value) {
+    return;
+  }
+  if (!Array.isArray(list)) {
+    return;
+  }
+  if (!list.includes(value)) {
+    list.push(value);
+  }
+}
+
+function containsAny(text, patterns) {
+  const source = String(text || "").toLowerCase();
+  return patterns.some((pattern) => source.includes(pattern));
+}
+
+function inferQuestionSignals(userMessage) {
+  const text = String(userMessage || "");
+  const signals = {
+    conceptTags: [],
+    focusMoreOn: [],
+    preferredExplanationStyle: [],
+    figurePriority: [],
+    unresolvedConcepts: [],
+    followUpPrompt: "",
+  };
+
+  if (containsAny(text, ["figure", "图", "图表", "表", "figure 1", "figure 2"])) {
+    uniquePush(signals.focusMoreOn, "key figures");
+    uniquePush(signals.preferredExplanationStyle, "figure-first");
+    const match = text.match(/figure\s*\d+/i);
+    if (match) {
+      uniquePush(signals.figurePriority, match[0].replace(/\s+/g, " ").trim());
+    } else {
+      uniquePush(signals.figurePriority, "key figures");
+    }
+  }
+
+  if (containsAny(text, ["why", "为什么", "直觉", "intuition"])) {
+    uniquePush(signals.preferredExplanationStyle, "intuition-first");
+  }
+
+  if (containsAny(text, ["compare", "baseline", "对比", "区别", "相比"])) {
+    uniquePush(signals.preferredExplanationStyle, "comparison-first");
+    uniquePush(signals.focusMoreOn, "comparison and baseline");
+  }
+
+  const conceptRules = [
+    { key: "self-attention", patterns: ["self-attention", "自注意力"] },
+    { key: "multi-head attention", patterns: ["multi-head", "多头"] },
+    { key: "positional encoding", patterns: ["positional", "位置编码"] },
+    { key: "encoder-decoder", patterns: ["encoder-decoder", "编码器", "解码器"] },
+    { key: "rnn", patterns: ["rnn", "循环神经", "循环网络"] },
+    { key: "attention", patterns: ["attention", "注意力"] },
+    { key: "experiment", patterns: ["实验", "evidence", "证据"] },
+    { key: "baseline", patterns: ["baseline", "基线"] },
+  ];
+
+  for (const rule of conceptRules) {
+    if (containsAny(text, rule.patterns.map((item) => item.toLowerCase()))) {
+      uniquePush(signals.conceptTags, rule.key);
+      uniquePush(signals.unresolvedConcepts, rule.key);
+      uniquePush(signals.focusMoreOn, rule.key);
+    }
+  }
+
+  if (signals.conceptTags.length) {
+    signals.followUpPrompt = `下次继续时，优先确认这些概念是否真正讲透：${signals.conceptTags.join(" / ")}`;
+  }
+
+  return signals;
+}
+
 async function exists(adapter, path) {
   try {
     return await adapter.exists(path);
@@ -363,6 +437,7 @@ module.exports = class ObPaperReadPlugin extends Plugin {
             source_pdf: paper.source?.path || "",
             open_questions: paper.open_questions || [],
             reading_progress: paper.reading_progress || {},
+            teaching_adjustments: paper.teaching_adjustments || {},
           }
         : null,
       related_questions: relatedQuestions,
@@ -548,23 +623,40 @@ module.exports = class ObPaperReadPlugin extends Plugin {
         papers: [],
         sessions: [],
         ask_count: 0,
+        status: "open",
+        resolution_confidence: 0.0,
+        last_asked_at: "",
         last_answer_note: "",
         follow_up_prompt: "",
+        resolved_in_papers: [],
+        unresolved_in_papers: [],
       };
+    const signals = inferQuestionSignals(userMessage);
     question.ask_count += 1;
+    question.last_asked_at = new Date().toISOString();
     question.last_answer_note = clip(answer, 220);
+    question.status = question.status === "resolved" ? "reopened" : "open";
+    question.resolution_confidence = Math.min(Number(question.resolution_confidence || 0), 0.4);
+    question.follow_up_prompt = signals.followUpPrompt || question.follow_up_prompt || "";
     if (!question.papers.includes(paperId)) {
       question.papers.push(paperId);
     }
     if (!question.sessions.includes(sessionId)) {
       question.sessions.push(sessionId);
     }
+    for (const variant of [userMessage]) {
+      uniquePush(question.variants, variant);
+    }
+    for (const tag of signals.conceptTags) {
+      uniquePush(question.concept_tags, tag);
+    }
+    uniquePush(question.unresolved_in_papers, paperId);
     await this.writeJson(questionPath, question);
 
-    await this.bumpPaperMetrics(paperId);
+    await this.bumpPaperMetrics(paperId, sessionId, questionId, userMessage, signals);
   }
 
-  async bumpPaperMetrics(paperId) {
+  async bumpPaperMetrics(paperId, sessionId, questionId, userMessage, signals) {
     if (!paperId || paperId === "no-paper") {
       return;
     }
@@ -578,6 +670,33 @@ module.exports = class ObPaperReadPlugin extends Plugin {
     metrics.qa_count = Number(metrics.qa_count || 0) + 1;
     metrics.last_read_at = new Date().toISOString();
     card.reading_metrics = metrics;
+    card.open_questions = Array.isArray(card.open_questions) ? card.open_questions : [];
+    uniquePush(card.open_questions, userMessage);
+    card.question_refs = Array.isArray(card.question_refs) ? card.question_refs : [];
+    card.session_refs = Array.isArray(card.session_refs) ? card.session_refs : [];
+    uniquePush(card.question_refs, questionId);
+    uniquePush(card.session_refs, sessionId);
+    card.teaching_adjustments = card.teaching_adjustments || {
+      focus_more_on: [],
+      focus_less_on: [],
+      preferred_explanation_style: [],
+      figure_priority: [],
+      unresolved_concepts: [],
+      carry_into_next_generation: true,
+      notes: "",
+    };
+    for (const item of signals.focusMoreOn || []) {
+      uniquePush(card.teaching_adjustments.focus_more_on, item);
+    }
+    for (const item of signals.preferredExplanationStyle || []) {
+      uniquePush(card.teaching_adjustments.preferred_explanation_style, item);
+    }
+    for (const item of signals.figurePriority || []) {
+      uniquePush(card.teaching_adjustments.figure_priority, item);
+    }
+    for (const item of signals.unresolvedConcepts || []) {
+      uniquePush(card.teaching_adjustments.unresolved_concepts, item);
+    }
     if (card.status === "reading_generated") {
       card.status = "reading_in_progress";
     }
