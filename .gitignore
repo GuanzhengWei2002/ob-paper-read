@@ -1,0 +1,26 @@
+.DS_Store
+Thumbs.db
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Local working data
+.ob-paper-read-memory/
+raw-papers/
+reading-vault/
+tmp-check/
+tmp-skill-check/
+tmp-skill-check-v2/
+
+# Obsidian local state
+.obsidian/workspace*
+.obsidian/cache
+
+# Generated paper outputs
+papers/*/assets/
+papers/*/reading.md

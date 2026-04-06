@@ -1,0 +1,9 @@
+{
+  "id": "ob-paper-read-chat",
+  "name": "OB Paper Read Chat",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "Right-sidebar chat and context bridge for ob-paper-read.",
+  "author": "Codex",
+  "isDesktopOnly": true
+}

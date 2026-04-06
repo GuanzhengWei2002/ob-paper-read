@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ob Paper Read"
+  short_description: "Obsidian-oriented PDF reading with memory and Markdown outputs."
+  default_prompt: "Use $ob-paper-read to turn the PDF paper I uploaded into an Obsidian-friendly reading workflow with a single reading.md file and reading memory."
