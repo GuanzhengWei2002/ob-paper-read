@@ -50,7 +50,7 @@ The goal is for `reading.md` itself to feel like a guided lecture note that can 
 
 - `SKILL.md`: the main skill definition
 - `scripts/`: helper scripts for memory bootstrap, paper cards, reading generation, figure extraction, and comparison context
-- `references/`: setup docs, output rules, memory schema, plugin notes, and platform adapters
+- `references/`: setup docs, output rules, memory schema, plugin notes, platform adapters, and the lightweight concept layer
 - `obsidian-plugin/`: the Obsidian right-sidebar chat plugin
 
 ## Obsidian Chat
@@ -68,8 +68,10 @@ It supports two usage modes:
 2. Run `scripts/bootstrap_memory.py`
 3. Create or ingest a paper card
 4. Generate `reading.md` with `scripts/create_reading_bundle.py`
+   Optionally add `--suggest-concepts` to get a lightweight concept suggestion after generation
 5. Optionally extract figures with `scripts/extract_pdf_figures.py`
-6. Open the PDF, `reading.md`, and the chat sidebar in Obsidian
+6. Optionally update `concepts/` and `overviews/index.md` with `scripts/update_global_pages.py`
+7. Open the PDF, `reading.md`, and the chat sidebar in Obsidian
 
 ## Current Scope
 
@@ -81,6 +83,7 @@ V1 includes:
 - lecture-style Markdown output
 - optional figure extraction
 - question-driven `teaching_adjustments`
+- a lightweight concept layer under `concepts/` and `overviews/index.md`
 
 V1 does not aim to be:
 

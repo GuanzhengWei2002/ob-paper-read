@@ -31,7 +31,11 @@ Treat the workspace as four layers:
 - rendered figure assets inside `assets/`
 - persistent memory across sessions
 
-Load [references/session-flow.md](references/session-flow.md) for the reading workflow. Load [references/memory-schema.md](references/memory-schema.md) when writing persistent memory. Load [references/output-artifacts.md](references/output-artifacts.md) when creating Markdown deliverables. Load [references/setup.md](references/setup.md) when the user asks about prerequisites or quickstart. Load [references/compatibility.md](references/compatibility.md) when the user asks about Windows or macOS usage, path handling, or shell differences. Load [references/obsidian-workspace.md](references/obsidian-workspace.md) when the user asks about panes, context packets, or reading-state logic. Load [references/obsidian-plugin.md](references/obsidian-plugin.md) when the user asks where the AI chat lives inside Obsidian or how context returns from Obsidian into the model. Load [references/platform-adapters.md](references/platform-adapters.md) when the skill needs to run in Codex, Claude Code, or OpenClaw.
+Optionally add a fifth lightweight layer for cross-paper reuse:
+
+- concept pages under `concepts/` and a compact index under `overviews/`
+
+Load [references/session-flow.md](references/session-flow.md) for the reading workflow. Load [references/memory-schema.md](references/memory-schema.md) when writing persistent memory. Load [references/output-artifacts.md](references/output-artifacts.md) when creating Markdown deliverables. Load [references/global-reading.md](references/global-reading.md) when the user asks for cross-paper concepts, methods, topics, index pages, or lightweight global reading. Load [references/setup.md](references/setup.md) when the user asks about prerequisites or quickstart. Load [references/compatibility.md](references/compatibility.md) when the user asks about Windows or macOS usage, path handling, or shell differences. Load [references/obsidian-workspace.md](references/obsidian-workspace.md) when the user asks about panes, context packets, or reading-state logic. Load [references/obsidian-plugin.md](references/obsidian-plugin.md) when the user asks where the AI chat lives inside Obsidian or how context returns from Obsidian into the model. Load [references/platform-adapters.md](references/platform-adapters.md) when the skill needs to run in Codex, Claude Code, or OpenClaw.
 
 ## Core Rules
 
@@ -52,6 +56,8 @@ Load [references/session-flow.md](references/session-flow.md) for the reading wo
 15. Default to very detailed explanation, not terse summarization.
 16. User memory may adjust emphasis, but the main lecture-note structure should still follow the general teaching pattern.
 17. Use `teaching_adjustments` and resolved/unresolved question memory to strengthen weak spots, not to replace the paper’s main explanatory route.
+18. Single-paper reading remains the primary flow; concept pages are a lightweight secondary layer.
+19. Keep the concept layer small: only create cross-paper pages for stable, reusable concepts.
 
 ## Workflow
 
@@ -195,6 +201,7 @@ Generate:
 
 - `reading.md`
 - figure assets under `papers/<paper-id>/assets/`
+- optional concept pages under `concepts/` and a compact index under `overviews/`
 
 Use:
 
@@ -202,6 +209,7 @@ Use:
 - [scripts/create_paper_card.py](scripts/create_paper_card.py) to create a paper card
 - [scripts/create_reading_bundle.py](scripts/create_reading_bundle.py) to create the Markdown reading bundle
 - [scripts/extract_pdf_figures.py](scripts/extract_pdf_figures.py) to render key figure and table pages into image assets
+- [scripts/update_global_pages.py](scripts/update_global_pages.py) to create or update lightweight concept pages and a compact index
 
 ## Resource Map
 
@@ -210,6 +218,7 @@ Read these files only when needed:
 - [references/session-flow.md](references/session-flow.md)
 - [references/memory-schema.md](references/memory-schema.md)
 - [references/output-artifacts.md](references/output-artifacts.md)
+- [references/global-reading.md](references/global-reading.md)
 - [references/setup.md](references/setup.md)
 - [references/compatibility.md](references/compatibility.md)
 - [references/obsidian-workspace.md](references/obsidian-workspace.md)

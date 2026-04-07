@@ -5,6 +5,10 @@ import argparse
 import json
 from pathlib import Path
 
+from suggest_concepts import analyze as analyze_concepts
+from suggest_concepts import print_report as print_concept_report
+from suggest_concepts import update_review_state as update_concept_review_state
+
 
 def load_card(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8-sig"))
@@ -421,6 +425,11 @@ def main() -> int:
     parser.add_argument("--memory-dir", default=".ob-paper-read-memory", help="Memory directory name.")
     parser.add_argument("--vault-dir", default="reading-vault", help="Vault output directory.")
     parser.add_argument("--force", action="store_true", help="Overwrite existing markdown files.")
+    parser.add_argument(
+        "--suggest-concepts",
+        action="store_true",
+        help="After creating reading.md, suggest concept pages that may be worth updating.",
+    )
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
@@ -440,6 +449,12 @@ def main() -> int:
     write_text(paper_dir / "reading.md", reading_markdown(card), args.force)
 
     print(f"Created bundle in: {paper_dir}")
+    if args.suggest_concepts:
+        result = analyze_concepts(card_path, root, args.memory_dir, args.vault_dir)
+        print("")
+        print_concept_report(result)
+        if result["should_prompt"]:
+            update_concept_review_state(card_path, result["card"], result["concepts"], result["suggestion_reasons"])
     return 0
 
 

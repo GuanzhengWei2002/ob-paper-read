@@ -31,6 +31,7 @@ If multiple PDFs are uploaded, ask me to choose one primary paper.
 Guide me with a detailed reading route.
 Answer interruptions, then return to the last reading anchor.
 Persist memory using ./ob-paper-read/references/memory-schema.md.
+Optionally maintain lightweight concept pages using ./ob-paper-read/references/global-reading.md.
 ```
 
 ## OpenClaw
@@ -51,6 +52,7 @@ I uploaded 2 PDF papers.
 First classify them, ask me to choose one primary paper, then create a single reading.md file for the chosen paper.
 Default to a detailed reading structure and keep track of reading status and question memory.
 Do not use any external APIs or URLs.
+If the first paper is meaningfully read, optionally update lightweight concept pages for recurring concepts.
 ```
 
 ## Practical Note

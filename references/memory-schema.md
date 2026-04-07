@@ -17,6 +17,16 @@ Recommended structure:
 `- recommendations/
 ```
 
+The memory layer is still JSON-first.
+
+If you add the lightweight concept layer, keep its Markdown pages outside memory, usually under:
+
+```text
+reading-vault/
+|- concepts/
+`- overviews/
+```
+
 ## user-profile.json
 
 ```json

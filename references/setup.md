@@ -170,7 +170,8 @@ Windows PowerShell:
 ```powershell
 python .\ob-paper-read\scripts\create_reading_bundle.py <paper-id> `
   --root D:\your-workspace `
-  --vault-dir reading-vault
+  --vault-dir reading-vault `
+  --suggest-concepts
 ```
 
 macOS zsh/bash:
@@ -178,12 +179,46 @@ macOS zsh/bash:
 ```bash
 python3 ./ob-paper-read/scripts/create_reading_bundle.py <paper-id> \
   --root /Users/<name>/your-workspace \
-  --vault-dir reading-vault
+  --vault-dir reading-vault \
+  --suggest-concepts
 ```
 
 This creates:
 
 - `reading-vault/papers/<paper-id>/reading.md`
+
+If concept suggestions are detected, the command also prints:
+
+- a short concept candidate list
+- why the suggestion is being shown now
+- the next `update_global_pages.py` command to run if you want to accept it
+
+## Update The Lightweight Concept Layer
+
+After one paper has enough real reading context, you can update the optional concept layer.
+
+Windows PowerShell:
+
+```powershell
+python .\ob-paper-read\scripts\update_global_pages.py <paper-id> `
+  --root D:\your-workspace `
+  --vault-dir reading-vault `
+  --concept "self-attention"
+```
+
+macOS zsh/bash:
+
+```bash
+python3 ./ob-paper-read/scripts/update_global_pages.py <paper-id> \
+  --root /Users/<name>/your-workspace \
+  --vault-dir reading-vault \
+  --concept "self-attention"
+```
+
+This updates:
+
+- `reading-vault/concepts/`
+- `reading-vault/overviews/index.md`
 
 ## Extract Key Figures
 

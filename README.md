@@ -48,7 +48,7 @@
 
 - `SKILL.md`：主 skill 定义
 - `scripts/`：memory 初始化、paper card、讲义生成、图表抽取、对比上下文等脚本
-- `references/`：setup、输出规则、memory schema、插件说明、平台适配文档
+- `references/`：setup、输出规则、memory schema、插件说明、平台适配文档、轻量概念层说明
 - `obsidian-plugin/`：Obsidian 右侧聊天插件
 
 ## Obsidian 聊天
@@ -66,8 +66,10 @@
 2. 运行 `scripts/bootstrap_memory.py`
 3. 创建或导入一篇论文的 paper card
 4. 用 `scripts/create_reading_bundle.py` 生成 `reading.md`
+   可选：加 `--suggest-concepts`，在生成后给出“是否沉淀概念卡片”的建议
 5. 如有需要，用 `scripts/extract_pdf_figures.py` 抽取关键图表
-6. 在 Obsidian 里打开 PDF、`reading.md` 和聊天栏
+6. 可选：用 `scripts/update_global_pages.py` 更新 `concepts/` 和 `overviews/index.md`
+7. 在 Obsidian 里打开 PDF、`reading.md` 和聊天栏
 
 ## 当前范围
 
@@ -79,6 +81,7 @@ V1 已覆盖：
 - 讲义风格 Markdown 输出
 - 可选的图表抽取
 - 用户提问驱动的 `teaching_adjustments`
+- 轻量概念层：`concepts/` 与 `overviews/index.md`
 
 V1 暂时不追求：
 

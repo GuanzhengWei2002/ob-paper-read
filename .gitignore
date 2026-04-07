@@ -16,6 +16,7 @@ reading-vault/
 tmp-check/
 tmp-skill-check/
 tmp-skill-check-v2/
+demo-workspace/
 
 # Obsidian local state
 .obsidian/workspace*

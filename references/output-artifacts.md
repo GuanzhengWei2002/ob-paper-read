@@ -11,6 +11,11 @@ V1 should create:
 - rendered figure assets under `assets/`
 - session and question records in memory
 
+Optional lightweight concept-layer outputs:
+
+- `concepts/`
+- `overviews/index.md`
+
 Language default:
 
 - Chinese first
@@ -22,6 +27,8 @@ Language default:
 ```text
 workspace-root/
 |- raw-papers/
+|- concepts/
+|- overviews/
 |- papers/
 |  `- <paper-id>/
 |     |- reading.md
@@ -31,6 +38,9 @@ workspace-root/
 ```
 
 Keep the PDF immutable. Edit only Markdown and derived assets.
+
+Single-paper `reading.md` is still the primary artifact.
+Concept pages are compact cross-paper notes and should stay lightweight.
 
 ## reading.md
 
